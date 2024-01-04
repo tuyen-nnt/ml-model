@@ -19,3 +19,6 @@ EXPOSE 80
 
 # Run app.py when the container launches
 CMD ["python", "main.py"]
+
+# docker build -t your_image_name .
+# docker run -p 4000:80 your_image_name

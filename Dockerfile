@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.8-slim
+FROM python:3.8
 
 # Set the working directory to /app
 WORKDIR /app
@@ -9,16 +9,14 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-# check version package ``pip freeze``
+# check package version ``pip freeze``
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
-
-# Define environment variable
-# ENV NAME World
+# Set default values for environment variables
+ENV FEATURE_COLUMN=request \
+    TARGET_COLUMN=response
 
 # Run app.py when the container launches
 CMD ["python", "main.py"]
 
 # docker build -t your_image_name .
-# docker run -p 4000:80 your_image_name
+# docker run -e FEATURE_COLUMN=value1 -e TARGET_COLUMN=value2 your_image_name

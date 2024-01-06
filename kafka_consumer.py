@@ -3,7 +3,7 @@ import json
 from kafka import KafkaConsumer, TopicPartition, KafkaProducer
 import pandas as pd
 
-def consume_kafka(model, request_frequencies, label_encoder):
+def consume_kafka(model, request_frequencies, label_encoder, logging):
     topic_name = "quickstart-events"
 
     consumer = KafkaConsumer(
@@ -18,7 +18,7 @@ def consume_kafka(model, request_frequencies, label_encoder):
         bootstrap_servers='172.31.70.3:9092'
     )
 
-    print("Connected to Kafka")
+    logging.info("Connected to Kafka")
 
     # Assign partitions manually to control the offset
     topic_partitions = consumer.partitions_for_topic(topic_name)
@@ -43,21 +43,20 @@ def consume_kafka(model, request_frequencies, label_encoder):
         for tp, records in messages.items():
             for record in records:
                 # Process each message
-                print(f"Received message: {record.value.decode('utf-8')}")
+                logging.info(f"Received message: {record.value.decode('utf-8')}")
                 # Transform the message (you can replace this with your transformation logic)
                 # Process each message
                 input_message = record.value.decode('utf-8')
                 original_input_message = json.loads(input_message)["request"]
-                print(input_message)
+                logging.info(f"input_message: {input_message}")
 
                 # Convert message to  pandas series
                 input_message_series = pd.Series(name='request', data=[original_input_message])
 
-                print("input_message_series before map")
-                print(input_message_series)
+                logging.info(f"input_message_series before map: {input_message_series}")
+                logging.info(input_message_series)
                 input_message_freq = input_message_series.map(request_frequencies)
-                print("input_message_freq after map")
-                print(input_message_freq)
+                logging.info(f"input_message_freq after map: {input_message_freq}")
 
                 # If the pandas series with frequency has N/A value, then set it "No" and map again
                 if input_message_freq.isna().any():
@@ -71,21 +70,20 @@ def consume_kafka(model, request_frequencies, label_encoder):
 
                 # Drop the original 'request' column
                 input_message_freq = input_message_freq.drop(labels='request', axis=1)
-                print("input_message_freq")
-                print(input_message_freq)
+                logging.info(f"input_message_freq: {input_message_freq}")
 
                 # Convert to a matrix that is usable for sklearn prediction
                 input_message_matrix = pd.DataFrame(input_message_freq)
-                print(input_message_matrix)
+                logging.info(input_message_matrix)
 
 
                 # Transform the message (you can replace this with your transformation logic)
                 predicted_message = model.predict(input_message_matrix)
-                print(predicted_message)
+                logging.info(predicted_message)
 
                 # Use label encoder to inverse back to value 200 or 404 instead of 0,1
                 predicted_message_label_decoded = str(label_encoder.inverse_transform(predicted_message)[0])
-                print(predicted_message_label_decoded)
+                logging.info(predicted_message_label_decoded)
 
                 # Construct a dictionary with the "response" key
                 response_dict = {"request": original_input_message, "response": predicted_message_label_decoded}
@@ -94,10 +92,10 @@ def consume_kafka(model, request_frequencies, label_encoder):
                 json_string = json.dumps(response_dict)
 
                 # Print the JSON string
-                print("JSON String:", json_string)
+                logging.info("JSON String: ", json_string)
                 # Produce the transformed message to another topic
                 producer.send('result', value=json_string.encode('utf-8'))
-                print("Sent the predicted result to Kafka! DONE")
+                logging.info("Sent the predicted result to Kafka! DONE")
 
     # Close the consumer and producer when done
     consumer.close()

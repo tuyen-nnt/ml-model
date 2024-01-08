@@ -1,0 +1,7 @@
+version: '3'
+services:
+  my-ml-app:
+    build: .
+    environment:
+      - FEATURE_COLUMN=${FEATURE_COLUMN:-request}
+      - TARGET_COLUMN=${TARGET_COLUMN:-response}

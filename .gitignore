@@ -1,0 +1,7 @@
+# IDE specific files
+.idea
+# Dependency directories
+__pycache
+# Virtual environments
+venv/
+.env

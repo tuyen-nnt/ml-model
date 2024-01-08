@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # check package version ``pip freeze``
 
 # Set default values for environment variables
-ENV FEATURE_COLUMN=request \
-    TARGET_COLUMN=response
+# ENV FEATURE_COLUMN=request \
+#     TARGET_COLUMN=response
 
 # Run app.py when the container launches
 CMD ["python", "main.py"]

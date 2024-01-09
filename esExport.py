@@ -31,7 +31,7 @@ def get_elasticsearch_data(scroll_id=None):
         # Initial search request
         search_url = f"{base_url}/{index_name}/_search?scroll={scroll_timeout}"
         query = {
-            "size": 10,  # Number of documents per scroll
+            # "size": 10,  # Number of documents per scroll
             "query": {
                 # Your query goes here
                 "match_all": {}  # Example: Match all documents
@@ -50,23 +50,18 @@ def retrieve_all_records():
     total_records = get_total_record_count()
     records_per_scroll = 1000
     scroll_id = None
-    temp = []
+    df = pd.DataFrame([])
+
 
     while total_records > 0:
         response_data = get_elasticsearch_data(scroll_id)
         hits = response_data.get("hits", {}).get("hits", [])
 
         if not hits:
-            break  # No more results
+            break  # No more results & terminate the loop immediately
 
-        # Process the hits as needed
-        for hit in hits:
-            # Your processing logic for each document goes here
-            # print(json.dumps(hit, indent=2))
-            # We need only '_source', which has all the fields required.
-            # This elimantes the elasticsearch metdata like _id, _type, _index.
-            temp.append(hit['_source'])
-            print(hit['_source'])
+        # Initialize the DataFrame with the first batch of data
+        df = df.append([hit['_source'] for hit in hits])
 
         total_records -= records_per_scroll
         scroll_id = response_data.get("_scroll_id")

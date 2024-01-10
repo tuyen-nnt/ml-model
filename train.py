@@ -7,7 +7,7 @@ import numpy as np
 import os
 import logging
 
-def trainModel(df,logger):
+def trainModel(df, logging):
 
     # Load environment variables from .env file
     with open(".env") as env_file:
